@@ -1,6 +1,6 @@
 PODS:
   - Kiwi (2.4.0)
-  - RACSerialCommand (0.1.0):
+  - RACSerialCommand (0.4.0):
     - ReactiveCocoa (~> 2.0)
   - ReactiveCocoa (2.5):
     - ReactiveCocoa/UI (= 2.5)
@@ -20,7 +20,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Kiwi: f49c9d54b28917df5928fe44968a39ed198cb8a8
-  RACSerialCommand: 42315611c38d831c50a1834cfcf565cae7b69137
+  RACSerialCommand: 5fb59433e9eaad364868bd24d2ea1f3cd1dc6fa0
   ReactiveCocoa: e2db045570aa97c695e7aa97c2bcab222ae51f4a
 
 COCOAPODS: 0.39.0

@@ -27,6 +27,7 @@
         number = input;
         return [RACSignal empty];
     }];
+    [command useMainThread];
     [command execute:@(1)];
     [command execute:@(2)];
     [command execute:@(3)];

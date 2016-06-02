@@ -1,8 +1,8 @@
 {
   "name": "RACSerialCommand",
-  "version": "0.1.0",
-  "summary": "A short description of RACSerialCommand.",
-  "description": "TODO: Add long description of the pod here.",
+  "version": "0.4.0",
+  "summary": "A queue for ReactiveCocoa",
+  "description": "ReactiveCocoa didn't have any queue support. Now it has.",
   "homepage": "https://github.com/haifengkao/RACSerialCommand",
   "license": {
     "type": "MIT",
@@ -13,7 +13,7 @@
   },
   "source": {
     "git": "https://github.com/haifengkao/RACSerialCommand.git",
-    "tag": "0.1.0"
+    "tag": "0.4.0"
   },
   "platforms": {
     "ios": "8.0"

@@ -125,6 +125,11 @@ typedef void(^AsyncExecutionBlock)(VoidBlock completion);
     return self;
 }
 
+- (void)useMainThread
+{
+    self.queue = [NSOperationQueue mainQueue];
+}
+
 - (RACSignal *)execute:(id)input {
     RACReplaySubject* subject = [RACReplaySubject subject];
 

@@ -16,5 +16,6 @@
 - (instancetype)init NS_UNAVAILABLE;
 - (instancetype)initWithSignalBlock:(RACSignal * (^)(id input))signalBlock;
 - (RACSignal *)execute:(id)input;
+- (void)useMainThread; // if you want to perform all opertions in main thread. WARNING!! call this method right after init
 
 @end

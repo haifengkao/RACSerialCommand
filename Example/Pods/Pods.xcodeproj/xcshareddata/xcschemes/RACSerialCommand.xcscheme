@@ -14,7 +14,7 @@
             buildForArchiving = "YES">
             <BuildableReference
                BuildableIdentifier = 'primary'
-               BlueprintIdentifier = '20E8A893BDABF45B87C78248'
+               BlueprintIdentifier = '150DC54BA8A7922298DD19C6'
                BlueprintName = 'RACSerialCommand'
                ReferencedContainer = 'container:Pods.xcodeproj'
                BuildableName = 'RACSerialCommand.framework'>
