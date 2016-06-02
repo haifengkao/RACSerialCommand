@@ -8,7 +8,18 @@
 
 ## Example
 
-To run the example project, clone the repo, and run `pod install` from the Example directory first.
+Serialize RACSignal execution:
+``` objc
+    RACSerialCommand* command = [[RACSerialCommand alloc] initWithSignalBlock:^RACSignal*(id input){
+        NSLog(@"%@", input);
+        return [RACSignal empty];
+    }];
+    [command execute:@(1)];
+    [command execute:@(2)];
+    [command execute:@(3)];
+    
+    // will output 1 2 3
+```
 
 ## Requirements
 
