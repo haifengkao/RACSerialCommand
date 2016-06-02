@@ -1,0 +1,6 @@
+framework module Pods_RACSerialCommand_Tests {
+  umbrella header "Pods-RACSerialCommand_Tests-umbrella.h"
+
+  export *
+  module * { export * }
+}

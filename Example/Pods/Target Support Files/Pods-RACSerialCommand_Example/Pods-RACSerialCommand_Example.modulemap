@@ -1,0 +1,6 @@
+framework module Pods_RACSerialCommand_Example {
+  umbrella header "Pods-RACSerialCommand_Example-umbrella.h"
+
+  export *
+  module * { export * }
+}

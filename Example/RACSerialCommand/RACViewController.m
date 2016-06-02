@@ -7,9 +7,11 @@
 //
 
 #import "RACViewController.h"
+#import "RACSerialCommand.h"
+#import "RACSignal.h"
 
 @interface RACViewController ()
-
+@property (nonatomic, strong) RACSerialCommand* command;
 @end
 
 @implementation RACViewController
@@ -18,6 +20,18 @@
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
+    
+    __block NSNumber* number = nil;
+    RACSerialCommand* command = [[RACSerialCommand alloc] initWithSignalBlock:^RACSignal*(id input){
+        NSLog(@"%@", input);
+        number = input;
+        return [RACSignal empty];
+    }];
+    [command execute:@(1)];
+    [command execute:@(2)];
+    [command execute:@(3)];
+    
+    _command = command;
 }
 
 - (void)didReceiveMemoryWarning

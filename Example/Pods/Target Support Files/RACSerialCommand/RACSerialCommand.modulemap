@@ -1,0 +1,6 @@
+framework module RACSerialCommand {
+  umbrella header "RACSerialCommand-umbrella.h"
+
+  export *
+  module * { export * }
+}

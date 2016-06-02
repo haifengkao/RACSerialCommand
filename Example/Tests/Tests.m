@@ -8,37 +8,28 @@
 
 // https://github.com/kiwi-bdd/Kiwi
 
+#import "RACSerialCommand.h"
+#import "RACsignal.h"
+
 SPEC_BEGIN(InitialTests)
 
-describe(@"My initial tests", ^{
-
-  context(@"will fail", ^{
-
-      it(@"can do maths", ^{
-          [[@1 should] equal:@2];
-      });
-
-      it(@"can read", ^{
-          [[@"number" should] equal:@"string"];
-      });
-    
-      it(@"will wait and fail", ^{
-          NSObject *object = [[NSObject alloc] init];
-          [[expectFutureValue(object) shouldEventually] receive:@selector(autoContentAccessingProxy)];
-      });
-  });
+describe(@"RACSerialCommand", ^{
 
   context(@"will pass", ^{
-    
-      it(@"can do maths", ^{
-        [[@1 should] beLessThan:@23];
+
+      it(@"should output 1 2 3", ^{
+          __block NSNumber* number = nil;
+          RACSerialCommand* command = [[RACSerialCommand alloc] initWithSignalBlock:^RACSignal*(id input){
+              NSLog(@"%@", input);
+              number = input;
+              return [RACSignal empty];
+          }];
+        [command execute:@(1)];
+        [command execute:@(2)];
+        [command execute:@(3)];
+        [[expectFutureValue(number) shouldEventually] equal:@(3)];
       });
-    
-      it(@"can read", ^{
-          [[@"team" shouldNot] containString:@"I"];
-      });  
   });
-  
 });
 
 SPEC_END
