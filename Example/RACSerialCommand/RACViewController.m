@@ -9,6 +9,9 @@
 #import "RACViewController.h"
 #import "RACSerialCommand.h"
 #import "RACSignal.h"
+#import "RACSignal+Operations.h"
+#import "RACDisposable.h"
+#import "RACSubscriber.h"
 
 @interface RACViewController ()
 @property (nonatomic, strong) RACSerialCommand* command;
@@ -21,11 +24,25 @@
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
     
+    return;
     __block NSNumber* number = nil;
     RACSerialCommand* command = [[RACSerialCommand alloc] initWithSignalBlock:^RACSignal*(id input){
-        NSLog(@"%@", input);
+        NSLog(@"init %@", input);
         number = input;
-        return [RACSignal empty];
+        RACSignal* signal = [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) 
+        {
+            [subscriber sendNext:input];
+            NSLog(@"sent %@", input);
+
+            [[[RACSignal empty] delay:2.0] subscribeCompleted:^() {
+                [subscriber sendCompleted];    
+            }];
+            
+            return [RACDisposable disposableWithBlock:^{
+                
+            }];
+        }];
+        return signal;
     }];
     [command useMainThread];
     [command execute:@(1)];

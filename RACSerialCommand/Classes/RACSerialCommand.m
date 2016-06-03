@@ -15,101 +15,12 @@
 #import "NSObject+RACDeallocating.h"
 #import "RACSignal+Operations.h"
 
-typedef void(^VoidBlock)();
-typedef void(^AsyncExecutionBlock)(VoidBlock completion);
-
-@interface SHPBlockOperation : NSOperation
-
-- (instancetype)init NS_UNAVAILABLE;
-- (instancetype)initWithExecutionBlock:(AsyncExecutionBlock)block NS_DESIGNATED_INITIALIZER;;
-
-@end
-
-@interface SHPBlockOperation ()
-
-@property (nonatomic, strong) AsyncExecutionBlock executionBlock;
-
-@property (assign, getter=isExecuting) BOOL executing;
-@property (assign, getter=isConcurrent) BOOL concurrent;
-@property (assign, getter=isFinished) BOOL finished;
-@end
-
-@implementation SHPBlockOperation {
-
-}
-@synthesize executing = _executing;
-@synthesize finished = _finished;
-@synthesize concurrent = _concurrent;
-
-- (instancetype)init {
-    NSAssert(NO, @"Please use designated initializer");
-    return nil;
-}
-
-- (instancetype)initWithExecutionBlock:(AsyncExecutionBlock)block {
-    self = [super init];
-    if (self) {
-        self.concurrent = YES;
-        self.executionBlock = block;
-    }
-    return self;
-}
-
-- (void)start {
-    self.executing = YES;
-
-    @weakify(self)
-    void (^completion)() = ^() {
-        @strongify(self)
-        self.executing = NO;
-        self.finished = YES;
-    };
-
-    self.executionBlock(completion);
-
-}
-
-- (void)setExecuting:(BOOL)executing
-{
-    [self willChangeValueForKey:@"isExecuting"];
-    _executing = executing;
-    [self didChangeValueForKey:@"isExecuting"];
-}
-
-- (void)setConcurrent:(BOOL)concurrent
-{
-    [self willChangeValueForKey:@"isConcurrent"];
-    _concurrent = concurrent;
-    [self didChangeValueForKey:@"isConcurrent"];
-}
-
-- (void)setFinished:(BOOL)finished
-{
-    [self willChangeValueForKey:@"isFinished"];
-    _finished = finished;
-    [self didChangeValueForKey:@"isFinished"];
-}
-
-- (BOOL)isConcurrent {
-    return _concurrent;
-}
-
-- (BOOL)isExecuting
-{
-    return _executing;
-}
-
-- (BOOL)isFinished
-{
-    return _finished;
-}
-
-@end
-
 @interface RACSerialCommand()
 // The signal block that the receiver was initialized with.
 @property (nonatomic, copy) RACSignal * (^signalBlock)(id input);
-@property (strong) NSOperationQueue* queue;
+@property (nonatomic, strong) RACSubject* subject;
+@property (nonatomic, strong) RACSignal* queue;
+@property (assign) BOOL shouldUseMainThread;
 @end
 
 @implementation RACSerialCommand
@@ -118,55 +29,62 @@ typedef void(^AsyncExecutionBlock)(VoidBlock completion);
 
     if (self = [super init]) {
         _signalBlock = signalBlock;
-        _queue = [[NSOperationQueue alloc] init];
-        _queue.maxConcurrentOperationCount = 1;
+        RACSubject* subject = [RACSubject subject];
+        RACSignal* queue = [[subject concat] takeUntil:self.rac_willDeallocSignal];
+        _subject = subject;
+        _queue = queue;
+        [queue subscribeNext:^(id x) {
+            // activate the queue
+        }];
     }
 
     return self;
 }
 
+
+/** 
+  * If you want the signal to deliver on the main thread, call this method right after init
+  * 
+  */
 - (void)useMainThread
 {
-    self.queue = [NSOperationQueue mainQueue];
+    self.shouldUseMainThread = YES;
 }
 
+/** 
+  * we want to keep the interface the same as RACCommand
+  * but the mechanism doesn't allow us to return the command signal
+  * 
+  * @return nil
+  */
 - (RACSignal *)execute:(id)input {
-    RACReplaySubject* subject = [RACReplaySubject subject];
 
-    @weakify(subject);
+    if (self.shouldUseMainThread) {
+        // TODO: i'm too lazy to implement this stuff. A simple assert will work as well
+        NSAssert([NSOperationQueue.currentQueue isEqual:NSOperationQueue.mainQueue] || [NSThread isMainThread], @"if you call execute on main thread, the signal will be delivered on main thread as well");
+    }
+
     @weakify(self);
-    SHPBlockOperation *operation = [[SHPBlockOperation alloc] initWithExecutionBlock:^(VoidBlock completion) {
-
+    RACSignal* signal = [RACSignal defer:^(){
         @strongify(self);
-        @strongify(subject);
 
         if (!self.signalBlock) {
             // self has been dealloc
-            completion();
-            return;
+            return [RACSignal empty];
         }
 
         RACSignal* signal = self.signalBlock(input);
         if (!signal) { 
             // complete immediately, we don't want the queue to be blocked
-            [subject sendCompleted];
-            completion(); 
-            return;
+            return [RACSignal empty];
         } 
-
-        if (subject) {
-            [signal subscribe:subject];
-        }
-        
-        [signal subscribeError:^(NSError* error) {
-            // error handling?
-            completion();    
-        } completed:^() {
-            completion();    
-        }];
+        return signal;
     }];
-    [self.queue addOperation:operation];
 
-    return [subject takeUntil:self.rac_willDeallocSignal]; // nothing we can do when signalBlock is gone
+    // add the signal to the queue
+    [self.subject sendNext:signal];
+
+    return nil; // the signal will be activated when subscribed. We don't want it to happen
 }
+
 @end

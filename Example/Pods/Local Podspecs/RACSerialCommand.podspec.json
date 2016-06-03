@@ -1,6 +1,6 @@
 {
   "name": "RACSerialCommand",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "summary": "A queue for ReactiveCocoa",
   "description": "ReactiveCocoa didn't have any queue support. Now it has.",
   "homepage": "https://github.com/haifengkao/RACSerialCommand",
@@ -13,7 +13,7 @@
   },
   "source": {
     "git": "https://github.com/haifengkao/RACSerialCommand.git",
-    "tag": "0.4.0"
+    "tag": "0.5.0"
   },
   "platforms": {
     "ios": "8.0"

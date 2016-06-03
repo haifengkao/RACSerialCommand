@@ -9,7 +9,12 @@
 // https://github.com/kiwi-bdd/Kiwi
 
 #import "RACSerialCommand.h"
-#import "RACsignal.h"
+#import "RACSignal.h"
+#import "RACScheduler.h"
+#import "RACSignal+Operations.h"
+#import "RACDisposable.h"
+#import "RACSubscriber.h"
+
 
 SPEC_BEGIN(InitialTests)
 
@@ -20,14 +25,27 @@ describe(@"RACSerialCommand", ^{
       it(@"should output 1 2 3", ^{
           __block NSNumber* number = nil;
           RACSerialCommand* command = [[RACSerialCommand alloc] initWithSignalBlock:^RACSignal*(id input){
-              NSLog(@"%@", input);
-              number = input;
-              return [RACSignal empty];
+            NSLog(@"init %@", input);
+            number = input;
+            RACSignal* signal = [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
+                [subscriber sendNext:input];
+                NSLog(@"sent %@", input);
+
+                [[[RACSignal empty] delay:2.0] subscribeCompleted:^() {
+                    [subscriber sendCompleted];
+                }];
+                 return nil;
+            }];
+
+            return signal;
           }];
-        [command execute:@(1)];
-        [command execute:@(2)];
-        [command execute:@(3)];
-        [[expectFutureValue(number) shouldEventually] equal:@(3)];
+          RACScheduler* scheduler = [RACScheduler mainThreadScheduler];
+          [RACSignal startEagerlyWithScheduler:scheduler block:^(id<RACSubscriber> subscriber){ 
+              [command execute:@(1)];
+              [command execute:@(2)];
+              [command execute:@(3)];
+          }];
+        [[expectFutureValue(number) shouldEventuallyBeforeTimingOutAfter(10000.0)] equal:@(3)];
       });
   });
 });
